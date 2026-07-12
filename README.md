@@ -1,7 +1,7 @@
 # pantheon-rls
 
 [![tests](https://github.com/Igfray/pantheon-rls/actions/workflows/ci.yml/badge.svg)](https://github.com/Igfray/pantheon-rls/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/pantheon-rls)](https://pypi.org/project/pantheon-rls/)
+[![PyPI](https://img.shields.io/pypi/v/pantheon-rls?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/pantheon-rls/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://pypi.org/project/pantheon-rls/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
