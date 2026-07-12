@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pantheon-rls"
+version = "0.1.0"
+description = "Tenant isolation as a Postgres guarantee — force-RLS + least-privilege grants, as reusable SQL."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Isaac Teague Frayling" }]
+keywords = ["postgres", "row-level-security", "rls", "multi-tenant", "tenant-isolation", "security", "sql"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Database",
+    "Topic :: Security",
+]
+dependencies = []
+
+[project.optional-dependencies]
+sqlalchemy = ["SQLAlchemy>=2.0"]
+
+[project.urls]
+Homepage = "https://github.com/Igfray/pantheon-rls"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["pantheon_rls.py"]
+
+[tool.hatch.build.targets.sdist]
+include = ["pantheon_rls.py", "test_pantheon_rls.py", "README.md", "LICENSE", "NOTICE"]
