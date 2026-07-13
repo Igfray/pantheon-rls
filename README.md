@@ -60,6 +60,12 @@ pip install "pantheon-rls[sqlalchemy]"   # + bind_tenant() convenience (else run
 
 This is the isolation **primitive** — the RLS DDL + grant helpers + the per-transaction tenant bind. It is not an ORM, a migration tool, or a full multi-tenancy framework; it's the ~60 lines that make Postgres itself refuse cross-tenant access, done right (FORCE + non-privileged role + fail-closed).
 
+
+## Changelog
+
+- **0.1.1** — **identifiers are now double-quoted** in the emitted DDL, so a reserved-word table or role (`order`, `user`) is valid SQL instead of a syntax error. Validation is unchanged (it already forbids the `"` needed to break out — quoting is not the injection guard, it just makes reserved words work). Names are quoted verbatim, so pass identifiers in the exact case they exist.
+- **0.1.0** — initial release.
+
 ## License
 
 Apache-2.0. See `LICENSE`.

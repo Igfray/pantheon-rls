@@ -50,6 +50,15 @@ def _ident(name: str, what: str) -> str:
     return name
 
 
+def _quote(name: str) -> str:
+    """Double-quote a validated `[schema.]identifier` for emission, per dotted part, so a reserved-word table
+    (`order`, `user`) or a case-sensitive name is valid SQL rather than a syntax error. Safe because `_IDENT_RE`
+    already forbids the `"` that would be needed to break out — this only makes reserved words work, it is NOT the
+    injection guard. NB: the name is quoted VERBATIM, so pass identifiers in the exact case they exist (an unquoted
+    Postgres identifier folds to lower-case)."""
+    return ".".join(f'"{part}"' for part in name.split("."))
+
+
 def _guc(name: str) -> str:
     if not isinstance(name, str) or not _GUC_RE.match(name):
         raise ValueError(f"unsafe GUC name {name!r}: expected a 'class.name' setting")
@@ -73,10 +82,11 @@ def enable_rls_sql(table: str, *, tenant_column: str = "tenant_id",
                    tenant_guc: str = DEFAULT_TENANT_GUC, tenant_type: str | None = "uuid") -> list[str]:
     """The DDL that places `table` fully under tenant isolation (ENABLE + FORCE + a fail-closed policy). Run once
     per scoped table in your migration, as the table-owning / privileged role. `tenant_type=None` for no cast."""
-    t = _ident(table, "table")
-    col = _ident(tenant_column, "tenant_column")
+    raw = _ident(table, "table")
+    t = _quote(raw)
+    col = _quote(_ident(tenant_column, "tenant_column"))
     expr = _tenant_expr(tenant_guc, tenant_type)
-    policy = _policy(t)
+    policy = _quote(_policy(raw))
     return [
         f"ALTER TABLE {t} ENABLE ROW LEVEL SECURITY;",
         f"ALTER TABLE {t} FORCE ROW LEVEL SECURITY;",
@@ -87,8 +97,9 @@ def enable_rls_sql(table: str, *, tenant_column: str = "tenant_id",
 
 def disable_rls_sql(table: str) -> list[str]:
     """Reverse `enable_rls_sql` (drop the policy, unforce, disable)."""
-    t = _ident(table, "table")
-    policy = _policy(t)
+    raw = _ident(table, "table")
+    t = _quote(raw)
+    policy = _quote(_policy(raw))
     return [
         f"DROP POLICY IF EXISTS {policy} ON {t};",
         f"ALTER TABLE {t} NO FORCE ROW LEVEL SECURITY;",
@@ -99,7 +110,8 @@ def disable_rls_sql(table: str) -> list[str]:
 def grant_crud_sql(table: str, role: str) -> str:
     """GRANT the four CRUD verbs on `table` to `role` — point this at your NON-superuser, NON-BYPASSRLS app role
     (the one the runtime connects as), never a superuser (which ignores RLS)."""
-    return f"GRANT SELECT, INSERT, UPDATE, DELETE ON {_ident(table, 'table')} TO {_ident(role, 'role')};"
+    return (f"GRANT SELECT, INSERT, UPDATE, DELETE ON {_quote(_ident(table, 'table'))} "
+            f"TO {_quote(_ident(role, 'role'))};")
 
 
 def bind_tenant(session, tenant_id, *, tenant_guc: str = DEFAULT_TENANT_GUC) -> None:
